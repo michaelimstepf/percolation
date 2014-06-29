@@ -21,39 +21,44 @@ class Percolation
   # @param columns [Integer] width of grid
   # @raise [ArgumentError] if height or width < 1
   def initialize(rows, columns)
-    raise ArgumentError, 'number of rows or columns is < 1' if (rows < 1 || columns < 1)
+    raise ArgumentError, 'number of rows or columns is < 1' if (rows < 0 || columns < 0)
     
     @rows = rows
     @columns = columns
     @grid = {}
-    @cells = []
+    @sites = []
     @number_of_open_sites = 0
 
     @rows.times do |row|
-      row += 1 # start at 1
       @grid[row] = {}
       @columns.times do |column|      
-        column += 1 # start at 1
         @grid[row][column] = false
-        @cells < "#{row}_#{column}"        
+        @sites < "#{row}_#{column}"        
       end
     end
 
-    @union_find = UnionFind::UnionFind.new(@cells)
+    @union_find = UnionFind::UnionFind.new(@sites)
   end
 
   # Opens cell.
   # @param row [Integer] row
   # @param column [Integer] column
-  # @return [Integer] number of open sites
+  # @return [Integer, NilClass] number of open sites or nil if site is already open
   # @raise [IndexError] if row or column not in range of grid
   def open(row, column)
-    if (row < 1 || column < 1 || row > @rows || column > @columns)
-      raise IndexError, 'row or column not in range of grid'
-    end
+    raise_if_outside_grid(row, column)
 
+    return nil if @grid[row][column]
+    
     @grid[row][column] = true
     @number_of_open_sites += 1
+
+    neighboring_sites = get_neighboring_sites(row, column)
+    neighboring_sites.each do |neighboring_site|
+      if open?(row, column)
+
+      end
+    end
   end
 
   # Checks if cell is open.
@@ -62,12 +67,68 @@ class Percolation
   # @return [Boolean]
   # @raise [IndexError] if row or column not in range of grid
   def open?(row, column)
-    if (row < 1 || column < 1 || row > @rows || column > @columns)
-      raise IndexError, 'row or column not in range of grid'
-    end
+    raise_if_outside_grid(row, column)    
 
     @grid[row][column]
   end
+
+  def count_open_sites
+    @number_of_open_sites
+  end
+
+  def count_closed_sites
+    @rows * @columns - @number_of_open_sites
+  end
+
+  def count_isolated_sections
+    @union_find.count_isolated_components
+  end
+
+  private
+
+  # Checks if row number is in range of grid.
+  # @param row [Integer] row
+  # @return [Boolean]
+  def row_in_grid?(row)
+    (row >= 0 && row <= @rows) ? true : false
+  end
+
+  # Checks if column number is in range of grid.
+  # @param column [Integer] column
+  # @return [Boolean]
+  def column_in_grid?(column)
+    (column >= 0 && column <= @columns) ? true : false
+  end
+
+  # Raises error if row or column number is not in range of grid.
+  # @param row [Integer] column  
+  # @param column [Integer] column
+  # @return [Boolean] false
+  # @raise [IndexError] if row or column is not in range of grid
+  def raise_if_outside_grid(row, column)
+    unless row_in_grid?(row) && column_in_grid?(column)
+      raise IndexError, 'row or column not in range of grid'
+    end
+
+    false
+  end
+
+  # Retrieves neighboring sites that share one side with a site.
+  # @param row [Integer] column  
+  # @param column [Integer] column
+  # @return [Hash] neighboring sites
+  # @raise [IndexError] if row or column is not in range of grid
+  def get_neighboring_sites(row, column)
+    raise_if_outside_grid(row, column)
+
+    neighboring_sites = {}    
+    neighboring_sites[:top] = @grid[row-1][column] if row_in_grid?(row-1)
+    neighboring_sites[:bottom] = @grid[row+1][column] if row_in_grid?(row+1)
+    neighboring_sites[:left] = @grid[row][column-1] if column_in_grid?(column-1)
+    neighboring_sites[:right] = @grid[row][column+1] if column_in_grid?(column+1)
+
+    neighboring_sites
+  end  
 end
 
 end
