@@ -40,7 +40,7 @@ class Percolation
     @union_find = UnionFind::UnionFind.new(@sites)
   end
 
-  # Opens cell.
+  # Opens site and connects it to open neighboring sites.
   # @param row [Integer] row
   # @param column [Integer] column
   # @return [Integer, NilClass] number of open sites or nil if site is already open
@@ -55,10 +55,12 @@ class Percolation
 
     neighboring_sites = get_neighboring_sites(row, column)
     neighboring_sites.each do |neighboring_site|
-      if open?(row, column)
-
+      if open?(neighboring_site[:row], neighboring_site[:column])
+        @union_find.union("#{row}_#{column}", "#{neighboring_site[:row]}_#{neighboring_site[:column]}")
       end
     end
+
+    @number_of_open_sites
   end
 
   # Checks if cell is open.
@@ -82,6 +84,14 @@ class Percolation
 
   def count_isolated_sections
     @union_find.count_isolated_components
+  end
+
+  def all_sites_open?
+    count_closed_sites == 0
+  end
+
+  def percolates?(start, end)
+
   end
 
   private
@@ -122,10 +132,10 @@ class Percolation
     raise_if_outside_grid(row, column)
 
     neighboring_sites = {}    
-    neighboring_sites[:top] = @grid[row-1][column] if row_in_grid?(row-1)
-    neighboring_sites[:bottom] = @grid[row+1][column] if row_in_grid?(row+1)
-    neighboring_sites[:left] = @grid[row][column-1] if column_in_grid?(column-1)
-    neighboring_sites[:right] = @grid[row][column+1] if column_in_grid?(column+1)
+    neighboring_sites[:top] = {row: row-1, column: column} if row_in_grid?(row-1)
+    neighboring_sites[:bottom] = {row: row+1, column: column} if row_in_grid?(row+1)
+    neighboring_sites[:left] = {row: row, column: column-1} if column_in_grid?(column-1)
+    neighboring_sites[:right] = {row: row, column: column+1} if column_in_grid?(column+1)
 
     neighboring_sites
   end  
