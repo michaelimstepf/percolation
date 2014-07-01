@@ -148,5 +148,57 @@ describe Percolation::Percolation do
         expect(percolation.percolates?({row: 1, column: 1}, {row: 2, column: 1})).to be_truthy
       end
     end    
-  end                  
+  end
+
+  describe '#percolates_from_top_to_bottom?' do
+    context 'when grid does not percolate' do
+      percolation = Percolation::Percolation.new(4, 4)
+      
+      it 'returns false' do
+        expect(percolation.percolates_from_top_to_bottom?).to be_falsey
+        expect(percolation.percolates_from_bottom_to_top?).to be_falsey        
+        percolation.open(1,3)
+        expect(percolation.percolates_from_top_to_bottom?).to be_falsey
+        expect(percolation.percolates_from_bottom_to_top?).to be_falsey                
+      end
+    end
+
+    context 'when grid does percolate' do
+      percolation = Percolation::Percolation.new(4, 4)
+  
+      it 'returns true' do
+        percolation.open(2,1)
+        percolation.open(2,2)
+        percolation.open(3,2)        
+        expect(percolation.percolates_from_top_to_bottom?).to be_truthy
+        expect(percolation.percolates_from_bottom_to_top?).to be_truthy                
+      end
+    end    
+  end
+
+  describe '#percolates_from_left_to_right?' do
+    context 'when grid does not percolate' do
+      percolation = Percolation::Percolation.new(4, 4)
+      
+      it 'returns false' do
+        expect(percolation.percolates_from_left_to_right?).to be_falsey
+        expect(percolation.percolates_from_right_to_left?).to be_falsey        
+        percolation.open(1,2)
+        expect(percolation.percolates_from_left_to_right?).to be_falsey
+        expect(percolation.percolates_from_right_to_left?).to be_falsey                
+      end
+    end
+
+    context 'when grid does percolate' do
+      percolation = Percolation::Percolation.new(4, 4)
+  
+      it 'returns true' do
+        percolation.open(1,2)
+        percolation.open(2,2)
+        percolation.open(2,3)        
+        expect(percolation.percolates_from_left_to_right?).to be_truthy
+        expect(percolation.percolates_from_right_to_left?).to be_truthy        
+      end
+    end    
+  end                       
 end  

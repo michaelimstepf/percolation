@@ -116,6 +116,34 @@ class Percolation
     @union_find.connected?(site_1, site_2)
   end
 
+  # Checks whether the grid percolates from top to bottom
+  # @return [Boolean]
+  def percolates_from_top_to_bottom?
+    open_top_sites
+    open_bottom_sites
+    percolates?({row: 1, column: 1}, {row: @rows, column: 1})
+  end
+
+  # Checks whether the grid percolates from bottom to top
+  # @return [Boolean]
+  def percolates_from_bottom_to_top?
+    percolates_from_top_to_bottom?
+  end
+
+  # Checks whether the grid percolates from left to right
+  # @return [Boolean]
+  def percolates_from_left_to_right?
+    open_left_sites
+    open_right_sites
+    percolates?({row: 1, column: 1}, {row: 1, column: @columns})
+  end
+
+  # Checks whether the grid percolates from left to right
+  # @return [Boolean]
+  def percolates_from_right_to_left?
+    percolates_from_left_to_right?
+  end    
+
   # Returns grid as a nested Hash.
   # Entries can be accessed through grid[row][column].
   # Open sites are marked as true, closed sites are marked as false.
@@ -168,7 +196,47 @@ class Percolation
     neighboring_sites[:right] = {row: row, column: column+1} if column_in_grid?(column+1)
 
     neighboring_sites
-  end  
+  end
+
+  # Opens all sites in top row.
+  # @return [Integer] number of sites opened
+  def open_top_sites
+    @columns.times do |column|
+      column += 1 # start at 1
+      open(1, column)
+    end
+    @columns
+  end
+
+  # Opens all sites in bottom row.
+  # @return [Integer] number of sites opened
+  def open_bottom_sites
+    @columns.times do |column|
+      column += 1 # start at 1
+      open(@rows, column)
+    end
+    @columns
+  end
+
+  # Opens all sites in left column.
+  # @return [Integer] number of sites opened
+  def open_left_sites
+    @rows.times do |row|
+      row += 1 # start at 1
+      open(row, 1)
+    end
+    @rows
+  end
+
+  # Opens all sites in right column.
+  # @return [Integer] number of sites opened
+  def open_right_sites
+    @rows.times do |row|
+      row += 1 # start at 1
+      open(row, @columns)
+    end
+    @rows
+  end         
 end
 
 end
