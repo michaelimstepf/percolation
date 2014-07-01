@@ -2,19 +2,11 @@ require "percolation/version"
 
 module Percolation
 
-# This class tests a grid to see if there are enough open 
-# locations to connect the top of the grid with the bottom of the 
-# grid. It uses an two dimensional array of integers to represent 
-# the grid, and an instructor supplied WeightedQuickUnionUF object 
+# This class tests a grid to see if there are enough open sites to find  
+# a path between two sites. It uses a nested Hash with Booleans 
+# to represent closed and open sites and a UnionFind
+# (Weighted Quick Union with Path Compression) object
 # to keep track of the connections between open sites in the grid. 
-# 
-# The percolates() method returns true if a path can be found from a 
-# site at the top to the bottom. These two sites are are not actually 
-# represented in the grid, although they are represented in the  
-# union-find object at locations 0 and N*N + 2. They are "located"   
-# above and below the grid, and each connects to all the sites  
-# immediately above or below it. This simplifies the pathfinding 
-# process. 
 class Percolation
   # Initializes a perculation object.
   # @param rows [Integer] height of grid
