@@ -16,7 +16,7 @@ module Percolation
 # immediately above or below it. This simplifies the pathfinding 
 # process. 
 class Percolation
-  # Initializes an empty perculation data structure.
+  # Initializes a perculation object.
   # @param rows [Integer] height of grid
   # @param columns [Integer] width of grid
   # @raise [ArgumentError] if height or width < 1
@@ -30,10 +30,12 @@ class Percolation
     @number_of_open_sites = 0
 
     @rows.times do |row|
+      row += 1 # start at 1
       @grid[row] = {}
       @columns.times do |column|      
+        column += 1 # start at 1
         @grid[row][column] = false
-        @sites < "#{row}_#{column}"        
+        @sites << "#{row}_#{column}"        
       end
     end
 
@@ -48,13 +50,15 @@ class Percolation
   def open(row, column)
     raise_if_outside_grid(row, column)
 
+    # return if already open
     return nil if @grid[row][column]
     
     @grid[row][column] = true
     @number_of_open_sites += 1
 
+    # union with open neighbouring sites
     neighboring_sites = get_neighboring_sites(row, column)
-    neighboring_sites.each do |neighboring_site|
+    neighboring_sites.each do |side, neighboring_site|
       if open?(neighboring_site[:row], neighboring_site[:column])
         @union_find.union("#{row}_#{column}", "#{neighboring_site[:row]}_#{neighboring_site[:column]}")
       end
@@ -74,25 +78,51 @@ class Percolation
     @grid[row][column]
   end
 
+  # Counts the number of open sites.
+  # @return [Integer] number of open sites
   def count_open_sites
     @number_of_open_sites
   end
 
+  # Counts the number of closed sites.
+  # @return [Integer] number of closed sites
   def count_closed_sites
     @rows * @columns - @number_of_open_sites
   end
 
-  def count_isolated_sections
-    @union_find.count_isolated_components
-  end
-
+  # Checks whether all sites are open
+  # @return [Boolean]
   def all_sites_open?
     count_closed_sites == 0
   end
 
-  def percolates?(start, end)
+  # Checks whether all sites are closed
+  # @return [Boolean]
+  def all_sites_closed?
+    count_open_sites == 0
+  end  
 
+  # Checks whether two sites percolate
+  # @return [Boolean]
+  def percolates?(site_1, site_2)
+    # make sure arguments come in the right form
+    unless site_1.is_a?(Hash) && site_2.is_a?(Hash) && site_1.has_key?(:row) && site_1.has_key?(:column) && site_2.has_key?(:row) && site_2.has_key?(:column)
+      raise ArgumentError, 'arguments are not Hashes or do not include the keys :row and :column'
+    end
+
+    # translate into text for union find
+    site_1 = "#{site_1[:row]}_#{site_1[:column]}"
+    site_2 = "#{site_2[:row]}_#{site_2[:column]}"
+    @union_find.connected?(site_1, site_2)
   end
+
+  # Returns grid as a nested Hash.
+  # Entries can be accessed through grid[row][column].
+  # Open sites are marked as true, closed sites are marked as false.
+  # @return [Hash] grid
+  def get_grid
+    @grid
+  end  
 
   private
 
@@ -100,14 +130,14 @@ class Percolation
   # @param row [Integer] row
   # @return [Boolean]
   def row_in_grid?(row)
-    (row >= 0 && row <= @rows) ? true : false
+    (row > 0 && row <= @rows) ? true : false
   end
 
   # Checks if column number is in range of grid.
   # @param column [Integer] column
   # @return [Boolean]
   def column_in_grid?(column)
-    (column >= 0 && column <= @columns) ? true : false
+    (column > 0 && column <= @columns) ? true : false
   end
 
   # Raises error if row or column number is not in range of grid.
